@@ -1,0 +1,49 @@
+
+```{r, echo=FALSE, out.width= "15%", out.extra='style="float:right; padding:10px"'}
+knitr::include_graphics("../data/conclusion.png")
+```
+
+# Conclusion
+
+
+```{r, echo = FALSE, message = FALSE}
+source(here::here("scripts/setup.R"))
+```
+
+
+## Take home message
+
+The number of cancers is increasing rapidly worldwide. Based on the analysis conducted in this project, the incidence of developing cancer varies depending on  numerous variables. An interesting aspect is the fact that lung cancer represents only 1/8 of all types of cancer. This has to be taken into account because even though lung cancer is the second most common cancer worldwide, there are various types of cancer other than lung cancer that can impact both men and women’s lives. 
+ 
+The analysis between the intensity of smoking and the risk of developing lung cancer showed that there is a relation between the number of cigarettes smoked and the risk to develop cancer and lung cancer. However, smoking is not the only factor which is related to the increase of the risk of developing cancer and lung cancer.  Indeed, the correlation between the GDP per capita and the incidence to develop cancer is stronger than the one between the number of cigarettes smoked and the risk to develop a cancer. One reason may be the fact that wealthy countries have the ability to purchase more cigarettes which affects health. Another reason may be that in those countries, people have more access to health and care services. Therefore there are more people being diagnosed. Moreover, diet is also an important aspect to take into account because in wealthy countries such as America, people do often have poor diet choices which lead eventually to health issues. 
+
+ 
+The idea of this project was also to investigate the link between air pollution and cancer to see if the  quality of air breathed can be related to health. What was found is that the air is more polluted in Asia and Africa but these continents have the lowest risk to develop cancer. As a consequence, there is no evident correlation between the air pollution and cancer which supports one of the related work mentioned in the introduction of this project. Therefore, other air quality measures could be considered to study the relationship between these two variables. Overall, the risk to develop cancer is strongly correlated with an increase in the GDP per capita, a moderate increase in the number of cigarettes smoked per day but no clear correlation with the air pollution. 
+
+
+## Limitations
+
+This study has enabled us to analyze the relationships between cancer and other factors such as the number of cigarettes smoked per day, the GDP per capita and the air pollution. Even though we have identified some correlations between these variables, it is important to bear in mind the fact that the variables chosen in this project explain just a part of the risk of developing cancer. A lot of other variables can be linked to the risk of developing cancer. For instance, diet as well as stress can have a huge impact on the body and therefore can be related to the risk of developing a medical condition. These aspects are not taken into account in our analysis. 
+
+Furthermore, the amount of data was limited and included outliers. Moreover, we assumed that the collection of data was the same worldwide. Indeed, we do not take into account the quality of gathering data and this can be problematic because we don’t know exactly how people gather data and how consistent they are with their statistics. It is also crucial to consider the timeline regarding the period considered due to the fact that some variables, such as the GDP per capita is constantly evolving over time. The air pollution also changes according to the waste management, soil erosion, deforestation and industrial pollution in the country. These changes can impact the health of the population and therefore the incidence to develop cancer or lung cancer.
+
+```{r, echo=FALSE, out.width= "15%", out.extra='style="float:right; padding:10px"'}
+knitr::include_graphics("../data/recherche.png")
+```
+
+## Future work 
+
+
+Some additional research could be conducted on the topic in order to further investigate the relationship between cancer and its contributing factors. For instance, it would be interesting to study the relationship between diet choices and health issues. We live now in a society where rich countries are getting more and more overweight and stressed. In America, the consumption of processed food as well as fast-food is increasing which lead to obesity, diabetes and other health conditions.
+ 
+In terms of politics, it would be also interesting to analyze smoking prevention in different countries to see if the differences in terms of legislation have an impact on people's behavior and their smoking habits. Moreover, further analysis could be conducted with many different variables such as sun exposure, diet, physical inactivity, genetic inheritance, access to health care and so on. In fact, a lot of variables can be related to the risk of developing cancer.
+
+
+## Sources 
+
+^1^[WHO outlines steps to save 7 million lives from cancer](https://www.who.int/news/item/04-02-2020-who-outlines-steps-to-save-7-million-lives-from-cancer)
+
+^2^[WHO Report on the global tobacco epidemic](https://www.who.int/tobacco/mpower/mpower_report_global_control_2008.pdf)
+
+^3^[Cancer Control Opportunities in Low- and Middle-Income Countries.](https://www.ncbi.nlm.nih.gov/books/NBK54028/)
+

@@ -1,0 +1,63 @@
+# Introduction
+
+```{r, echo = FALSE, message = FALSE,warning=FALSE}
+source(here::here("scripts/setup.R"))
+```
+
+__What is Cancer?__
+
+"Cancer is the name given to a collection of related diseases. In all types of cancer, some of the body’s cells begin to divide without stopping and spread into surrounding tissues."(National Cancer Institute)
+
+A Cancer can start anywhere in the human body, which is made up of trillions of cells. Normally, human cells grow and divide to form new cells as the body needs them. When cells grow old or become damaged, they die, and new cells take their place. When cancer develops, however, this orderly process breaks down. 
+
+``````{r pressure, echo=FALSE, fig.cap="*How does cancer form? (National Cancer Institute)*", out.width = '50%'}
+knitr::include_graphics("../data/cancer_form.jpg")
+```
+
+
+## I. Overview and Motivation
+
+Nowadays, the number of cancers is increasing rapidly worldwide. According to the American cancer society, lung cancer is the second most common cancer in both men and women. As we know, the probability to develop such a cancer increases if we are a smoker. 
+
+For this reason, we would like to analyze the relationship between lung cancer and the intensity of smoking cigarettes to see how strong their correlation is. Tobacco smoking has been one of the world’s largest health problems for many decades. For the entire 20th century, it is estimated that around 100 million people died prematurely because of smoking, most of them in rich countries. According to the Global Burden of Disease study, more than 8 million people died prematurely as a result of smoking in 2017. 
+
+Simultaneously, the pollution in the air is also a leading risk factor for death worldwide. According to the World Wealth Organization (WHO), the air pollution in the poor countries is increasing whereas the air pollution in the rich countries is decreasing. In the developing countries, the pollution causes on average seven millions deaths per year. The goal of our project is to analyze the relationship between cancer incidence (overall and lung cancer), gdp per capita, air pollution and the intensity of smoking, meaning the number of cigarettes smoked per day. We highly believe that these three variables are correlated in some ways. According to us, health issues and more particularly cancers deserve deep intention as these cause a large number of deaths worldwide. 
+
+
+## II. Related Work
+
+A various number of studies have been conducted on these topics. A study conducted by the International Agency for Research on Cancer aims to analyze whether ambient air pollution is correlated with specific types of cancer other than lung cancer resulting in deaths. This study’s method was based on the analysis of a large sample (623,048 participants) over a period of 22 year (1982-2004). 
+
+Finally, they conclude that the ambient air pollution is not associated with deaths of nonlung cancers (Turner et. al., 2017). Even though the study showed no evident correlation between air pollution and cancer deaths, it is still relevant to take this kind of analysis into account as we are studying the cancer incidence and not the cancers resulting in deaths. Our research question number 4 relates to this topic. 
+
+
+Several studies have been conducted based on the relationship between the environment quality (including air pollution) and the wealth of a country, meaning here the GDP per capita. In 2004, Bouvier, conducted a study using these two variables. She separated the variable “air pollution” into several chemical components and studied the relationship between those chemical compounds in different countries (Canada, US and european countries) having different GDP per capita (ranging from $1100 to $24,371). As she didn’t include all the countries in the analysis, we have to be careful when extrapolating the data worldwide. However, her study deserves some attention as she still studied a large sample of countries (Bouvier, 2004). 
+
+
+
+The International Journal of Cancer published a study case in nov. 2002 that shows the relationship between smoking and lung cancer. The study explored the impact of smoking cigarettes on different cell types of lung cancer in both men and women. The study concluded that the more people smoke, the more impacted are their cells and this results eventually to a higher probability to die from lung cancer (Pesch et. al, 2011).
+
+
+## III. Research questions
+
+
+```{r, echo=FALSE, out.width= "20%", out.extra='style="float:right; padding:10px"'}
+knitr::include_graphics("../data/question.jpg")
+```
+
+1. Is the risk of developing lung cancer positively correlated with the number of cigarettes smoked per day?
+
+2. Is there a relationship between the gdp per capita of a country and the risk of developing cancer? 
+3. Does the number of cigarettes smoked per day increase when the gdp per capita increases over time ?
+4. Are people exposed to higher air pollution more likely to develop cancers?
+5. Can we see that in areas where the air is the most polluted the incidence of risk of having lung cancers is also the highest?
+
+
+
+
+
+
+
+
+
+

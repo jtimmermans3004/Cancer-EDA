@@ -1,0 +1,14 @@
+---
+title: "Factors influencing the risk of developing cancer worldwide"
+author: "Timmermans Julie and Monnin Helena"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  prettydoc::html_pretty:
+    theme: architect
+    highlight: github
+---
+```{r setup, warning=FALSE,message=FALSE}
+```
+
+```{r child = c('intro.Rmd', 'data.Rmd', 'eda.Rmd', 'analysis.Rmd', 'concl.Rmd')}
+```

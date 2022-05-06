@@ -1,0 +1,627 @@
+# Analysis
+
+```{r, echo = FALSE, message = FALSE}
+source(here::here("scripts/setup.R"))
+```
+
+```{r, echo=FALSE, out.width= "20%", out.extra='style="float:right; padding:10px"'}
+knitr::include_graphics("../data/cible.png")
+```
+
+## Answers to the research questions
+
+
+### 1. Is the risk of developing lung cancer positively correlated with the number of cigarettes smoked per day?
+
+In order to answer this first question an analyze of the relationship between the risk of developing any type of cancer and more precisely lung cancer according to the number of cigarettes smoked per day in each country is conducted.
+
+```{r,out.width="700px", out.height="500px"}
+
+q1 <-
+  ggplot(cancerSummary, aes(x = number, y = Value_all)) +
+  geom_point(aes(color = Continent_Name)) + geom_smooth(
+    method = 'lm',
+    size = 0.5,
+    color = "black",
+    se = FALSE
+  ) + scale_color_brewer(palette =
+                           "Set1") +
+  labs(title = "The risk of developing cancer increases with the number of cigarettes smoked") +
+  labs(color = '<b> Continent </b>') +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Incidence of risk') +   xlab('Number of cigarettes smoked') +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+
+
+library(plotly)
+ggplotly(q1) 
+
+
+```
+
+
+According to this graph, there is a positive correlation between the number of cigarettes smoked and the risk of developing cancer. The risk of developing cancer increases with the number of cigarettes smoked per day.
+
+
+This leads to the analysis of the relationship between the risk of developing lung cancer and the number of cigarettes smoked per day.
+
+```{r,out.width="700px", out.height="500px"}
+
+#Lung Cancer and number of cigarettes
+
+q2 <- ggplot(cancerSummary, aes(x = number, y = Value_lung)) +
+  geom_point(aes(color = Continent_Name)) + geom_smooth(
+    method = 'lm',
+    size = 0.5,
+    color =
+      "black",
+    se = TRUE
+  ) + scale_color_brewer(palette =
+                           "Set1") +
+  labs(title = "The risk of developing lung cancer increases with the number of cigarettes smoked") +
+  labs(color = '<b> Continent </b>')  +
+  theme_fivethirtyeight() + theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Incidence of risk ') +
+  xlab('Number of cigarettes smoked') + theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(q2)
+
+```
+
+Again there is a positive correlation between the two variables. Indeed, the risk of developing lung cancer increases with an increase in the number of cigarettes smoked per day. This graph shows that the higher the consumption of cigarettes is, the higher the risk of developing lung cancer.
+
+In both graphs it can be seen that in Europe (green points) the risk of developing cancer is the highest (most observations are above the regression line), whereas in Africa (red points) the risk is the lowest. As we have seen in the EDA part, it is in Europe that the amount of cigarettes smoked per day is the highest.
+
+```{r, include = FALSE}
+fit <- lm(Value_lung ~ number, data = cancerSummary)
+summary(fit)
+```
+
+The intercept and the slope of the regression line are statistically different from 0, as suggested by the respective t-tests.
+The regression equation is given by: $$Risk = 0.9453 + 0.0605\cdot number$$
+The slope $b_1$ is interpreted as the increase in the average risk of developing lung cancer per unit increase in the number of cigarettes smoked per day. It means that, as we increase the number of cigarettes smoked per day by 1 unit, the average risk of developing lung cancer increases by 0.0605. 
+
+An additional point has to be addressed when dealing with linear regressions. It is the fact that there is no causation, increasing the number of cigarettes by 1 unit doesn't cause the risk of developing lung cancer to increase by 6.05%. We can only deduce that an increase of 1 unit in the number of cigarettes smoked per day is associated with an increase of 6.05% in the risk of developing lung cancer, on average. 
+
+
+__How well does this model fit the data?__
+
+
++ The summary of the residuals, tells how well our model fit our data. 
+
+```{r}
+
+ggplot(cancerSummary, aes(fit$residuals)) +
+  geom_histogram(binwidth = 1,color = "darkblue", fill = "lightblue") +
+  theme_fivethirtyeight() +
+  labs(title = "Symmetric histogram for Model Residuals",
+       xlab = "Residuals") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+```
+
+The residuals look pretty symmetrical around 0, suggesting that our model fits the data well. The residual standard error represents the average amount that the response variable measurements deviate from the fitted linear model.
+
++ The R^2^ measures how close our data is to the linear regression, in our model $$R^2=0.0983$$
+This means that approximately 10\% of the variation in the risk of developing lung cancer is explained by the number of cigarettes smoked per day in this simple linear model.
+
++ The 0.95 confidence interval (which can be seen on the graph above) is for a given value of the number of cigarettes smoked per day, the interval estimate for the mean of the risk of developing lung cancer. Even though this model fits our data quite well, there is still variability within our observations. Because in reality, the risk of developing lung cancer is not just a function of the number of cigarettes smoked, but also of other variables.
+
+
+> To conclude, the risk of developing cancer increases with the number of cigarettes smoked.
+
+
+
+### 2. Is there a relationship between the gdp per capita of a country and the risk of developing cancer?
+
+In the previous section EDA it was noticeable that there were outliers in the gdp per capita dataset. Once we remove the outliers, the relationship between the gdp per capita and the risk of developing cancer in each country is analyzed. 
+
+
+```{r,out.width="700px", out.height="500px"}
+#remove the outliers
+
+Q1a <- quantile(cancerSummary$GDP, .25)
+Q3a <- quantile(cancerSummary$GDP, .75)
+IQRa <- IQR(cancerSummary$GDP)
+
+cancerSummary <-
+  subset(
+    cancerSummary,
+    cancerSummary$GDP > (Q1a - 1.5 * IQRa) &
+      cancerSummary$GDP < (Q3a + 1.5 * IQRa)
+  )
+
+q4 <-
+  ggplot(cancerSummary, aes(x = GDP, y = Value_all)) +
+  geom_point(aes(color = Continent_Name)) + geom_smooth(
+    method = 'lm',
+    size = 0.5,
+    color = "black",
+    se = TRUE
+  ) + scale_color_brewer(palette = "Set1") +
+  
+  labs(title = "The risk of developping cancer increases with the GDP per capita") +
+  labs(color = '<b> Continent </b>') +
+  theme_fivethirtyeight() + theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Incidence of risk value') +
+  xlab('Gdp per capita') + theme(plot.title = element_text(
+    size = 14,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(q4)
+
+```
+
+The linear regression shows a positive relationship between the gdp per capita of each country and the risk of developing cancer.
+
+
+```{r, include = FALSE}
+fit1 <- lm(Value_all ~ GDP, data = cancerSummary)
+summary(fit1)
+```
+
+The intercept and the slope are statistically different from 0. It means that, when the gdp per capita increases by 1000, the average risk of developing cancer increases by 0.422. 
+
+__How well does this model fit the data?__
+
++ Summary of the residuals: The distances between the observations and the model
+
+```{r}
+
+ggplot(cancerSummary, aes(fit1$residuals)) +
+  geom_histogram(binwidth = 1,color = "darkblue", fill = "lightblue") +
+  theme_fivethirtyeight() +
+  labs(title = "Symmetric histogram for Model Residuals",
+       xlab = "Residuals") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+```
+
+The residuals look pretty symmetrical around 0, suggesting that the model fits the data well.
+
++ The 0.95 confidence interval shows that the model fits our data well, there is little variability within the observations.
+
++ The R^2^ indicates that approximately 59\% of the variation in the risk of developing cancer is explained by the gdp per capita in this model.
+
+
+> To conclude, the risk of developing cancer increases with the country's gdp per capita.
+
+
+__How to explain these results?__
+
+Several reasons can explain these findings. As we have seen above, the higher the number of cigarettes smoked the higher the risk of developing cancer. However, we can assume that the higher the gdp per capita, the more people can afford to buy cigarettes. This can be one reason why the risk of developing cancer is positively related to the gdp per capita (this hypothesis is tested in question 3).
+
+In addition, access to health care is significantly lower in countries where the gdp per capita is low according to the World Health Organization (WHO^1^). Indeed, in some countries data are less reliable and health services are not equipped to prevent, diagnose and treat cancer. This would also explain why the incidence of developing cancer is higher in countries where the gdp per capita is high.
+
+
+
+### 3. Does the number of cigarettes smoked per day increase when the gdp per capita increases over time (between 1990 and 2012) ? 
+
+To answer this question we first analyzed the number of cigarettes smoked per day according to the evolution of the gdp per capita over time by country. The analysis was conducted for Europe, one of the continents where the risk of developing cancer is the highest. Then, the study analyses the case of Africa, where the risk of developing cancer is the lowest according to our data.
+
+In the graphs below, the blue lines represent the evolution of the gdp per capita and the barplots show the evolution of the number of cigarettes smoked per day between 1990 and 2012.
+
++ __Europe__
+
+```{r,out.width="700px", out.height="500px"}
+
+
+Europe <- gdp_smokers  %>% filter(Continent_Code == "EU")
+
+q5 <-
+  ggplot(data = Europe[222:354, ],
+         mapping = aes(x = Year, y = number)) + geom_bar(fill = "lightblue", stat = 'identity') +
+  facet_wrap( ~ Entity, ncol = 2) + geom_line(
+    Europe[222:354, ],
+    method = 'lm',
+    mapping = aes(x = Year, y = GDP / 1000),
+    color = "blue"
+  ) +
+  
+  scale_y_continuous(name = "Number of cigarettes",
+                     sec.axis = sec_axis(trans =  ~ . * 1000, name = "GDP per Capita")) +
+  labs(title = "GDP per capita and number of cigarettes smoked in Europe") +
+  theme_fivethirtyeight() + theme(
+    legend.position = "none",
+    axis.title = element_text(),
+    axis.title.x = element_text(),
+    axis.title.y = element_blank(),
+  ) + xlab('Year') + theme(plot.title = element_text(
+    size = 15,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(q5)
+
+``` 
+
+
+For some countries in Europe such as in France and Germany, the consumption of cigarettes and the gdp per capita are evolving in opposite direction. However, in other countries, such as Denmark and Estonia, the number of cigarettes smoked per day increases with an increase in the gdp per capita.
+
+
++ __Africa__
+
+```{r,out.width="700px", out.height="500px"}
+
+Africa <- gdp_smokers  %>% filter(Continent_Code == "AF")
+
+
+AF <- ggplot(data = Africa[1:138,],
+             mapping = aes(x = Year, y = number)) +
+  geom_bar(fill = "lightblue", stat = 'identity') +
+  geom_line(Africa[1:138,],
+            mapping = aes(x = Year, y = GDP / 1000),
+            color = "blue") + scale_y_continuous(name = "Number of cigarettes",
+                                                 sec.axis = sec_axis(trans =  ~ . * 1000, name = "GDP per Capita")) +
+  facet_wrap(~ Entity, ncol = 2, scales = "free") +
+  
+  labs(title = "GDP per capita and number of cigarrettes smoked in Africa") +
+  theme_fivethirtyeight() + theme(
+    legend.position = "none",
+    axis.title = element_text(),
+    axis.title.x = element_text(),
+    axis.title.y = element_blank(),
+  ) + xlab('Year') + theme(plot.title = element_text(
+    size = 15,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(AF)
+
+```
+
+The conclusion remains the same for the second graph. It is indeed difficult to draw a general conclusion for all countries. Some countries experience an increase in the consumption of cigarettes when the GDP per capita increases and some other countries witnessed the exact opposite observations. What we can say for sure is that in overall, all African countries have a gdp per capita that remains relatively constant (or increases slightly) over the years unlike the European countries.
+
+
+From these graphs, it is difficult to have an overall overview of the countries as each of them experience different observations.
+
+
+Finally, using the information provided by the graphs above, we will analyze whether worldwide there is a positive relationship or not between the number of cigarettes smoked and the gdp per capita using a linear regression.
+
+
+__Relationship between the gdp per capita and the number of cigarettes smoked__
+
+To analyze and predict the relationship between these two variables, we take the most recent observations for each variable (2017 and 2012) in order to have the more realistic results to the current situation.
+
+```{r,out.width="700px", out.height="500px"}
+
+
+q6 <-
+  ggplot(cancerSummary, aes(x = GDP, y = number)) + geom_point(aes(color = Continent_Name)) + geom_smooth(
+    method = "lm",
+    size =  0.5,
+    color = "black",
+    se = TRUE
+  ) + scale_color_brewer(palette = "Set1") +
+  
+  labs(title = "The number of cigarettes smoked increases with the GDP per capita ") +
+  theme_fivethirtyeight() + theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Number of cigarettes ') +
+  xlab('Gdp per capita') + theme(plot.title = element_text(
+    size = 14,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  )) +
+  labs(color = '<b> Continent </b>')
+
+ggplotly(q6)
+
+```
+
+This graph shows that there is a positive correlation between the gdp per capita and the number of cigarettes smoked per day. 
+
+```{r, include = FALSE}
+fit2 <- lm(number ~ GDP, data = cancerSummary)
+summary(fit2)
+```
+
+The intercept and the slope are statistically different from 0. It means that, when the gdp per capita increases by 1000, the number of cigarettes smoked per day increases by 0.25. 
+
+
+__How well does this model fit the data?__
+
++ Summary of the residuals:
+
+```{r}
+
+ggplot(cancerSummary, aes(fit2$residuals)) +
+  geom_histogram(binwidth = 1,color = "darkblue", fill = "lightblue") +
+  theme_fivethirtyeight() +
+  labs(title = "Quasi-symmetric histogram for Model Residuals",
+       xlab = "Residuals") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+```
+
+The residuals look roughly symmetrical around 0, suggesting that our model fits not perfectly the data.
+
++ The 0.95 confidence interval shows that there is variability within the observations.
+
++ The R^2^ shows that only 16\% of the variation in the number of cigarettes smoked per day is explained by this linear model.
+
+
+> To conclude, the higher the country’s gdp per capita, the higher the number of cigarettes consumed.
+
+__How to explain these results?__
+
+This relation can be explained by the fact that the higher the gdp per capita, the more individuals can afford to buy cigarettes. 
+
+Nevertheless, prevention policies may be one of the reasons why the number of cigarettes smoked per day has declined relative to the increase of the gdp per capita in some countries. Indeed, in France and Germany for example, more tobacco control policies are set up than in other countries where fewer resources are devoted to prevention (WHO^2^).
+
+
+
+### 4. Are people exposed to higher air pollution more likely to develop cancers?
+
+In order to answer this question a linear regression between the air pollution and the risk of developing cancer is calculated.
+
+```{r,out.width="700px", out.height="500px"}
+
+#Remove the air pollution outliers
+
+Q1b <- quantile(cancerSummary$Value_air, .25)
+Q3b <- quantile(cancerSummary$Value_air, .75)
+IQRb <- IQR(cancerSummary$Value_air)
+cancerSummary <-
+  subset(
+    cancerSummary,
+    cancerSummary$Value_air > (Q1b - 1.5 * IQRb) &
+      cancerSummary$Value_air < (Q3b + 1.5 * IQRb)
+  )
+
+
+a1 <-
+  ggplot(cancerSummary, aes(x = Value_air, y = Value_all)) + geom_point(aes(color = Continent_Name)) +
+  geom_smooth(
+    method = "lm",
+    size =  0.5,
+    color = "black",
+    se = FALSE
+  ) + scale_color_brewer(palette =
+                           "Set1") +
+  
+  labs(title = "Negative relation between the incidence of developping cancer and air pollution") +
+  
+  theme_fivethirtyeight() + theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Incidence of risk value') +
+  xlab('PM2.5 concentration') + theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  )) +
+  labs(color = '<b> Continent </b>')
+
+
+ggplotly(a1)
+
+a2 <-
+  ggplot(cancerSummary, aes(x = Value_air, y = Value_lung)) + geom_point(aes(color = Continent_Name)) +
+  geom_smooth(
+    method = "lm",
+    size =  0.5,
+    color = "black",
+    se = FALSE
+  ) + scale_color_brewer(palette =
+                           "Set1") + labs(title = "Negative relation between the incidence of developping lung cancer and air pollution") + theme_fivethirtyeight() +
+  theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Incidence of risk value') +
+  xlab('PM2.5 concentration') + theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  )) +
+  labs(color = '<b> Continent </b>')
+
+ggplotly(a2)
+
+```
+
+
+In these graphs, it is noticeable that there is no positive correlation between air pollution and the risk of developing cancer or lung cancer. Moreover, the linear regressions even indicate that the more polluted a country’s air is, the lower the risk of developing cancer.
+
+```{r, include= FALSE}
+
+summary(lm(Value_lung~Value_air, data= cancerSummary))
+
+```
+
+
+__How to explain these results?__
+
+This result seems completely illogical and shows the limitations of our data. Indeed, we can see that Africa (red points) is one of the continents where the air is highly polluted, however the risk of developing cancer remains very low compared to Europe for example. One of the reasons is that cancer is not recognized as a high-priority health problem in most of low and middle income countries (Institute of Medicine^3^). Additional observations and variables measuring air pollution and cancer, would be needed to evaluate whether higher air pollution increases the risk of developing cancer.
+
+
+> In conclusion, it cannot be stated that higher air pollution is related to higer risk to develop cancer based on the data.
+
+However, we can clearly see that countries with higher air pollution are those with a lower gdp per capita and belonging to the African continent (red points). As a result, the continent where the gdp per capita is the highest, that is to say in Europe, the air is also the less polluted (green points).
+
+Therefore an analyze of the relationship between the air pollution and the gdp per capita of a country is conducted.
+
+```{r,out.width="700px", out.height="500px"}
+
+a3 <-
+  ggplot(cancerSummary, aes(x = GDP, y = Value_air)) + geom_point(aes(color = Continent_Name)) +
+  geom_smooth(
+    method = "lm",
+    size =  0.5,
+    color = "black",
+    se = TRUE
+  ) + scale_color_brewer(palette =
+                           "Set1") + labs(title =
+                                            "The air pollution increases when the GDP per capita decreases") + theme_fivethirtyeight() +
+  theme(axis.title = element_text(), axis.title.x = element_text()) + ylab("PM2.5 concentration") +
+  xlab('GDP per capita') + theme(plot.title = element_text(
+    size = 15,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  )) +
+  labs(color = '<b> Continent </b>')
+
+ggplotly(a3)
+
+```
+
+
+This graph confirms the assumption made above, the air is the most polluted in countries with a low gdp per capita. We clearly see that it is in Asia and Africa that the air is the most polluted (red and blue points). Africa being among the continents with the lowest gdp per capita in each country.
+
+```{r, include = FALSE}
+fit3 <- lm(Value_air ~ GDP, data = cancerSummary)
+summary(fit3)
+
+```
+
+The intercept and the slope are statistically different from 0. When the gdp per capita increases by 1000, the concentration in PM2.5 decreases by 0.34.
+
+__How well does this model fit the data?__
+
++ Summary of the residuals:
+
+```{r}
+
+ggplot(cancerSummary, aes(fit3$residuals)) +
+  geom_histogram(binwidth = 1,
+                 color = "darkblue",
+                 fill = "lightblue") +
+  theme_fivethirtyeight() +
+  labs(title = "Skewed right histogram of Residuals",
+       xlab = "Residuals") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+```
+
+The residuals are not quite symmetrical, other quality indicators have to be evaluated to identify the relevance of this model.
+
+
++ The 0.95 confidence interval shows that there is variability within the observations but that the model fits relatively well the data.
+
++ The R^2^ shows that 23\% of the variation in the PM2.5 concentration is explained by the linear model.
+
+> To conclude, there is a negative relation between the gdp per capita and the air pollution. Higher air pollution in a country is associated with a lower gdp per capita.
+
+
+### 5. Can we see that in areas where the air is the most polluted the incidence of risk of having lung cancers is also the highest?
+
+
+As seen above, the areas where the air is the most polluted are the one where the countries have a lower gdp per capita. This is the case in Asia and Africa. That’s why the relationship between the air pollution and the risk of developing lung cancer is analyzed in each country of these continents.
+
+
+```{r,out.width="700px", out.height="500px"}
+
+#Creation of blue color palette
+mycolors <- rep('#56B4E9',63)
+
+rq5 <-
+  cancerSummary %>% filter(Continent_Name %in% c("Asia", "Africa")) %>%
+  ggplot(cancerSummary, mapping =
+           aes(x = Value_air, y = Value_lung)) + geom_point(aes(color = Location)) +  geom_smooth(
+             method = "lm",
+             size =  0.5,
+             color = "black",
+             se = TRUE
+           ) +
+  
+  scale_color_manual(values = mycolors) + labs(title = "Lack of relation between the air pollution and the risk of developping lung cancer") +
+  theme_fivethirtyeight() + theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Incidence of risk value') +
+  xlab('PM2.5 concentration') + theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(rq5) %>% layout(showlegend = FALSE)
+
+```
+
+```{r, include = FALSE}
+
+cancer0 <- cancerSummary %>% filter(Continent_Name %in% c("Asia", "Africa"))
+fit4 <-  lm(Value_lung ~ Value_air, data = cancer0)
+summary(fit4)
+
+```
+
+This regression line means that there is no relationship between the air pollution and the risk of developing lung cancer in Africa and Asia. The values are just randomly scattered on the grid.
+
+
+The intercept and the slope are not statistically different from 0 in this model. It means that changes in the value of risk of developing lung cancer are not associated with changes in PM2.5 concentration.
+
+Moreover, the confidence interval is wide, this means that the sample is too small. Indeed if the dispersion is high, the conclusion is less certain and the confidence interval becomes wider.
+
+> To conclude, the data and this linear model do not allow us to conclude whether polluted air increases the risk of developing lung cancer in areas where the air is the most polluted. 
+
+> This shows that a predictive model is generally more dependent on the quantity and quality of the data and the care taken in their preparation and selection, than on the modeling technique itself. 
+
+
+## Different methods considered
+
+
++ Correlation Matrix : Pearson correlation coefficient were used to examine the strength and direction of the linear relationship between the continuous variables. The correlation coefficient can range in value from −1 to +1. The larger the absolute value of the coefficient is, the stronger the relationship between the variables. However, based on correlation calculations, it cannot be inferred that there are cause and effect relationships between the variables.
+
++ Linear regressions were used to predict the risk of developing cancer based on a variety of variables. This method is performed on a dataset to predict the response variable based on a predictor variable or used to study the relationship between a response and predictor variable.
+Using regressions to make predictions doesn’t necessarily involve predicting the future. It predicts the mean of the dependent variable given specific values of the dependent variable. 
+
++ Multiple R-squared: The R^2^ value is a measure of how close the data is to the linear regression model. The values are always between 0 and 1; numbers closer to 1 represent well-fitting models. 
+
++ P-value: The p-value is associated with the F statistic and is used to interpret the significance for the whole model fit to the data.
+
++ Confidence interval : It is a range of values that contains the true mean of the population. As the sample size increases, the range of interval values will narrow, meaning that the mean can be estimated with much more accuracy compared with a smaller sample.
+
+
+## Competing approaches
+
+Other approaches can be considered to model and predict the risk of developing cancer. However, they require a larger amount of data and are more complex to implement.
+
+
++ Decision tree algorithms are if-else statements that can be used to predict a result based on data. It is a supervised machine learning algorithm. In the case of our project we could use a regression tree to predict the incidence of risk of having cancer, which is a continuous dependent variable. That depend on continuous factors like the number of cigarettes smoked, as well as the air pollution and the gdp per capita of the country. 
+In a regression tree, a regression model is fit to the target variable using each of the independent variables. After this, the data is split into several points for each independent variable. At each such point, the error between the predicted values and actual values is squared (SSE) and compared across the variables. Finally, the variable or point which has the lowest SSE is chosen as the split point. This process is continued recursively.
+
++ K-Nearest Neighbors (KNN) makes a prediction for a new observation by searching for the most similar training observations and pooling their values. This method relies on labeled input data to learn a function that produces an appropriate output when given new unlabeled data. KNN captures the idea of similarity, The advantages are that it's simple and easy to implement, there is no need to build a model, it tunes several parameters, or makes additional assumptions.
+The algorithm is versatile. It can be used for classification, regression, and search problems. However this algorithm gets significantly slower as the number of examples and/or predictors/independent variables increases.
+
++ Neural networks like MLP (multilayer perceptron) can learn complex patterns using layers of neurons which mathematically transform the data. The layers between the input and output are referred to as “hidden layers”. A neural network can learn relationships between the features that other algorithms cannot easily discover. Nevertheless it requires a very large amount of data and a long training time.
+
+
+## Justifications
+
+In this project the modeling method chosen is linear regression, it was one of the most suitable methods to our project because there was not a large number of observations in most of our datasets and it was an efficient and adapted method to answer our research questions. Indeed, linear regressions are one of the simplest and most common supervised machine learning algorithms used for predictive modeling. This model is used to measure the influence of one quantitative variable on another quantitative variable. 
+
+The advantages of this method are that it is quick to compute, it can be easily updated with new data, it is
+relatively easy to understand and to explain. However it does not allow to understand complex relationships and is difficult to capture non-linear relationships.
+

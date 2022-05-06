@@ -1,0 +1,822 @@
+# Exploratory data analysis
+
+```{r, echo = FALSE, message = FALSE}
+source(here::here("scripts/setup.R"))
+```
+
+
+
+## Mapping out the underlying structure
+
+``````{r, echo=FALSE, fig.cap="*Relationship between the datasets*", out.width = '80%'}
+knitr::include_graphics(here::here("data/route_Data.jpg"))
+```
+This figure helps to understand the relations between the cancerSummary table and all the other datasets, indeed this table contains the information of all important variables.
+
+
+## Identifying the most important variables
+
+The cancerSummary table and the figure above group together all the important variables that we will use during our project
+
+In this Exploratory data analysis part, we want to understand the important variables and how they relate to each other. We look at each dataset and get an overall overview of the data using several visualizations.
+
+
+
+## Univariate visualizations
+
+
+The goal of the univariate visualizations is to have an overall overview of the different datasets. The univariate data analysis includes discretes variables vs continuous variables which we are going to describe for each dataset. For each analysis we have taken the most recent year of the dataset, indeed we want to make the most representative analyses of the current situation. 
+
+Moreover, regarding the histograms, log transformations were used. Indeed, they make highly skewed distributions less skewed. This can be valuable for making patterns in the data more interpretable.
+
+__Cancer dataset__
+
+First we look at the cancer dataset. The dataset has 3 discrete variables (Entity, Code and Year) and 3 continuous variables that represent the number of deaths in 2017.
+
+
+```{r}
+
+#central tendency for most recent year (2017)
+cancer %>% filter(Year == 2017) %>% ggplot(cancer, mapping = aes(x = Number_Deaths, y = Number_Deaths)) +
+  geom_boxplot() + theme_fivethirtyeight() +
+  labs(title = "An extreme asymetric boxplot") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+
+#spread
+
+cancer %>% filter(Year == 2017) %>% ggplot(cancer, mapping = aes(x = Number_Deaths)) +
+  geom_histogram(color = "darkblue", fill = "lightblue") + scale_x_log10() + geom_vline(
+    aes(xintercept = mean(Number_Deaths)),
+    color = "red",
+    linetype = "dashed",
+    size = 1
+  ) +
+  
+  theme_fivethirtyeight() +
+  labs(title = "A Skewed left histogram",
+       xlab = "Deaths",
+       subtitle = "A low number of deaths is from far the most frequent observation") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+```
+
+ +  The cancer boxplot: The boxplot is almost inexistant as the number of outliers is very large. We don't see the tails or the median. This means that too many outliers are present in the dataset meaning that the number of deaths varies a lot. These outliers must be removed for a further analysis which will take place in the next step of the project. 
+
+
+
+ +  The cancer histogram: We used the log transformation to reduce the skewness of our original data, this makes the data more “normal” so that we can better interpret this histogram. Indeed it has a pretty long tail in the left side but in general present well the datas. 
+
+
+__Cancer Value dataset__
+
+We now look at the dataset named cancerValue. In the cancerValue dataset, the dicrete variables are: Population and ISO Code and the continuous variable is the variable Value (representing the incidence of risk in 2017).
+
+
+```{r}
+
+#central tendency for most recent year
+ggplot(cancerValue, aes(x = Value, y = Value)) +
+  geom_boxplot() + theme_fivethirtyeight() +
+  labs(title = "A boxplot without outliers") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+
+#spread
+
+ggplot(cancerValue, mapping = aes(x = Value)) +
+  geom_histogram(color = "darkblue", fill = "lightblue") + scale_x_log10() + geom_vline(
+    aes(xintercept = mean(Value)),
+    color = "red",
+    linetype = "dashed",
+    size = 1
+  ) + theme_fivethirtyeight() +
+  labs(title = "An incidence to develop cancer between 10-20 is the most frequent value", xlab =
+         "Incidence to develop cancer") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+
+```
+
++ The cancerValue boxplot: The tail going down is short whereas the tail going up is quite long. We have no outliers and the median is just above 15. Half of the observations have a cumulative incidence to develop cancer between 12.1 and 24.5. These numbers are higher than for the lung cancer which makes sense because here we take into account all cancer combined. On average, the population worldwide has a cumulative incidence to develop a cancer of 18.4.
+
++ The cancerValue histogram: In the histogram, we can see that on average people have an incidence to develop cancer of a value just under 20. This is represented by the red line in the histogram. Values near 20 (above and below 20) are also frequent in the dataset. 
+
+
+__Lung cancer dataset__
+
+Let's now look at the lungcancer dataset.
+The discrete variables are : ISO code and Population and the continuous variable is Value.
+
+```{r}
+
+#central tendency for most recent year
+ggplot(Lungcancer,
+       aes(x = Value, y = Value)) +
+  geom_boxplot() + theme_fivethirtyeight() +
+  labs(title =  "A relatively symmetric boxplot with one outlier") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+
+#spread
+
+ggplot(Lungcancer, aes(x = Value)) +
+  geom_histogram(color = "darkblue", fill = "lightblue") +
+  theme_fivethirtyeight() + scale_x_log10() + geom_vline(
+    aes(xintercept = mean(Value)),
+    color = "red",
+    linetype = "dashed",
+    size = 1
+  ) +
+  
+  labs(title = "An incidence to develop a lung cancer with a value above 2 is frequent", xlab = "Incidence to develop a lung cancer") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+```
+
+
++  The Lungcancer boxplot: We can see that the tail that is going down is short whilst the tail that is going up is long. The median is 1.5 and is represented by the black line. We have one outlier which is represented with a circle at the top of the boxplot. 50% of the population has an incidence between 0.56 to 3.1 to develop a lung cancer. On average, the population has an incidence of 1.5 to develop a lung cancer.  
+
++  The Lungcancer histogram: The histogram shows that on average, the population has a risk to develop a lung cancer of a value of around 2. We still have a lot of countries where the incidence to develop such a condition is higher, up to 8 approximately. 
+
+
+
+__Cigarettes dataset__
+
+The discrete variables in this dataset are: Entity, Code, Year and the continuous variable is the number of cigarettes smoked per day. For the continous variable, we can now look to the central tendency and the spread of the datas.
+
+```{r}
+
+#central tendency for most recent year (2012)
+smoker1 %>% ggplot(smokers, mapping = aes(x = number, y = number)) +
+  geom_boxplot() + theme_fivethirtyeight() +
+  labs(title = "Asymetric boxplot of the number of cigarettes smoked per day") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+#spread
+
+ggplot(smoker1,
+       aes(x = number)) +
+  geom_histogram(color = "darkblue", fill = "lightblue") + theme_fivethirtyeight() +
+  labs(title = "People smoke on average 18.5 cigarettes a day") + scale_x_log10() + geom_vline(
+    aes(xintercept = mean(number)),
+    color = "red",
+    linetype = "dashed",
+    size = 1
+  ) +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+```
+
+```{r, echo = FALSE, include= FALSE}
+
+# without the outliers that we do only for this dataset
+Q1 <- 12.7
+Q3 <- 23.9
+IQR <- Q3 - Q1 #IQR = 11.2
+
+smoke2 <- summary(smokers$number)
+bench <- 23.9 + 1.5 * IQR(smokers$number) #bench 40.7
+bench2 <- 12.5 - 1.5 * IQR
+outliers <- smokers$number[smokers$number > 40.7]
+rest <- smokers$number[smokers$number < 40.7]
+summary(rest)
+boxplot(rest, main = "symmetric boxplot") + theme_fivethirtyeight()
+plot(rest) +
+  plot(density(rest),
+       main = "Density graph",
+       xlab = "Number of cigarettes smoked per day",
+       subtitle = "we have one big spike around the value 20")
+
+```
+
++  The smokers boxplot:
+The median is 17.5 and is reprensented by the black line in the boxplot. The tails going up and down are quite short. We have three outliers (circles) which are not common values. The interquartile range box represent 50% of the data which means that 50% of the smokers smoke between 11.8 and 23.5 cigarettes per day. 
+
++  The smokers histogram plot: We can see in the histogram that most of the values are concentrated between 10-40 as the bins corresponding to these values are the highest. The histogram is pretty symmetric as the tails going left and right have similar sizes. This means that there is a similar proportion of the population who smoke a few cigarettes a day and a lot per day. 
+
+
+__Gdp per capita dataset__
+
+Let's look at the gdp dataset. In the gdp dataset, the dicrete variables are: Entity, Code, Year and the continuous variable is the value of the GDP per capita.
+```{r}
+
+#central tendency
+gdp1 %>% ggplot(gdp1,
+                mapping = aes(x = GDP, y = GDP)) +
+  geom_boxplot() + theme_fivethirtyeight() +
+  labs(title = "Short boxplot with many outliers") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+#spread
+
+gdp1 %>% ggplot(gdp1, mapping = aes(x = GDP)) +
+  geom_histogram(color = "darkblue", fill = "lightblue") + geom_vline(
+    aes(xintercept = mean(GDP)),
+    color = "red",
+    linetype = "dashed",
+    size = 1
+  ) + scale_x_log10() +
+  
+  
+  theme_fivethirtyeight() +
+  labs(title = "A GDP per capita between 0-10 000 is the most frequent value", xlab = "GDP") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+
+```
+
+
++ The gdp per capita boxplot: The tails are really short (especially the lower one). We can see that we have a large number of outliers. Half of the countries in this dataset have a GDP between 3021 and 19 608. A few countries have a GDP which is much higher (can go up to 135 319). However, some of these countries are considered as "outliers". The black line in the boxplot is the median meaning that half of the distribution has a gdp per capita above and below 14 926.
+
++ The GDP per capita histogram: The histogram is quite symmetric as the previous one. The red line represents the average GDP per capita in the dataset which is 18 958.  
+
+
+__Air dataset__
+
+Finally, we look at the Air dataset. All the variables are discrete except the last one representing the pollution rate. In order to describe the boxplot, we use the air1 dataset in which the air value was transformed into a number.
+
+```{r}
+
+#central tendency
+ggplot(air1, aes(x = Value_air, y = Value_air)) +
+  geom_boxplot() + theme_fivethirtyeight() +
+  labs(title = "Symetric boxplot with a few outliers") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+
+#spread
+
+ggplot(air1, aes(x = Value_air)) +
+  geom_histogram(color = "darkblue", fill = "lightblue") + scale_x_log10() + geom_vline(
+    aes(xintercept = mean(Value_air)),
+    color = "red",
+    linetype = "dashed",
+    size = 1
+  ) +
+  theme_fivethirtyeight() +
+  labs(title = "A symmetric histogram",
+       xlab = "Deaths",
+       subtitle = "The pollution in the air has a value on average of 20.1") +
+  theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+
+```
+
+
+
++ The Air boxplot: The boxplot is quite symetric with a longer tail going up than down. We have however some outliers presented a the top of the boxplot. Half of the observations in this dataset have a concentration of fine particles between 15 and 30 on average. Some countries have a concentration of particles which is much higher and some of these countries are classified as "outliers" in our analysis as we can see in the boxplot.  
+
++ The Air histogram: This a pretty symmetric histogram. We can say that on average, the pollution in the air we breathe has a value between 10 and 40 approximately. A few countries have a lower or higher pollution than this. 
+
+
+## Multivariate visualizations
+
+In this part we will analyze and explore the behavior of the variables between them.
+
+Cancer is one of the leading causes of death, that's why we will first of all see the evolution of the number of people dying of cancer over time in each continent.
+
+```{r,out.width="700px", out.height="500px"}
+
+
+#Evolution mean number of cancer in Europe
+h1 <-
+  cancer %>% group_by(Continent_Name, Year) %>% summarize(moyenne = mean(Number_Deaths))
+
+
+h2 <-
+  h1 %>% filter(Continent_Name %in% c("Europe", "South America", "North America")) %>% ggplot(h1, mapping = aes(x = Year)) +
+  geom_line(aes(y = moyenne, color = Continent_Name)) + facet_wrap(~ Continent_Name, scales = "fixed", nrow = 3) +
+  labs(title = "The average number of deaths from cancer increases worldwide over time", x = "Year") +
+  
+  theme_fivethirtyeight() + theme(
+    legend.position = "none",
+    axis.title = element_text(),
+    axis.title.x = element_text(),
+    axis.title.y = element_blank()
+  ) + xlab('Year') + theme(plot.title = element_text(
+    size = 12,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(h2)
+
+
+h3 <-
+  h1 %>% filter(Continent_Name %in% c("Oceania", "Africa", "Asia")) %>% ggplot(h1, mapping = aes(x = Year)) +
+  geom_line(aes(y = moyenne, color = Continent_Name)) + facet_wrap( ~ Continent_Name, scales = "free", nrow = 3) +
+  
+  theme_fivethirtyeight() + theme(
+    legend.position = "none",
+    axis.title = element_text(),
+    axis.title.x = element_text(),
+    axis.title.y = element_blank(),
+  ) + xlab('Year') + theme(plot.title = element_text(
+    size = 15,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(h3)
+
+```
+
+From these graphs it can be seen that the average number of cancers deaths is significantly increasing over time in each continent. The continents with the highest number of cancer deaths are Asia and Oceania. However, in Africa there are the fewest cancer deaths.
+
+
+Now that we have seen a significant increase in the number of cancer deaths around the world, we are going to take an in-depth look at the risk of developing cancer, especially lung cancer, around the world.
+
+
+   +  __Analysis of the risk of developing all type of cancers and lung cancer worlwide__
+   
+```{r,out.width="700px", out.height="500px"}
+
+#boxplots number cancers
+
+boxp2 <-
+  ggplot(cancerSummary,
+         aes(x = Continent_Name, y = Value_all, fill = Continent_Name)) +
+  geom_boxplot() +  scale_fill_brewer(palette = "Blues") +
+  
+  labs(title = "Incidence of risk of developping cancer in each continent", x = "Continent", y = "Incidence of risk") +
+  theme_fivethirtyeight() + theme(legend.position = "none")
+
+ggplotly(boxp2)
+
+#boxplots number lung cancers
+boxp3 <-
+  ggplot(cancerSummary,
+         aes(x = Continent_Name, y = Value_lung, fill = Continent_Name)) +
+  geom_boxplot() +  scale_fill_brewer(palette = "Blues") +
+  
+  labs(title = "Incidence of risk of developping lung cancer in each continent", x = "Continent", y = "Incidence of risk") +
+  theme_fivethirtyeight() + theme(legend.position = "none")
+
+ggplotly(boxp3)
+
+```
+
+These boxplots show that the risk of developing cancer is the highest in Oceania and Europe and the lowest in Africa. However, the risk of developing lung cancer is also the highest in Europe, Oceania and Asia and is much lower in Africa.
+
+Now that we know from a global perspective the continents where the risk of developing cancer is the highest, we can see at the country level where the risk is the highest with the help of barplots.
+
+```{r}
+#barplot cancers
+univ1 <- cancerSummary %>% arrange(desc(Value_all)) %>%  head() %>%
+  ggplot(cancerSummary, mapping = aes(x = reorder(Location, Value_all), y = Value_all)) +
+  geom_bar(stat = 'identity', fill = "cornflowerblue",
+           color = "white") + coord_flip() +
+  
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Incidence of risk') +
+  xlab('Country') + theme(
+    legend.position = "none",
+    plot.title = element_text(
+      size = 15,
+      color = "black",
+      hjust = 0.5,
+      lineheight = 1.2
+    )
+  )
+
+univ2 <- cancerSummary %>% arrange(desc(Value_lung)) %>%  head() %>%
+  ggplot(cancerSummary, mapping = aes(x = reorder(Location, Value_lung), y = Value_lung)) +
+  geom_bar(stat = 'identity', fill = "cornflowerblue",
+           color = "white") + coord_flip() +
+  
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Incidence of risk') +
+  xlab('Country') + theme(
+    legend.position = "none",
+    plot.title = element_text(
+      size = 15,
+      color = "black",
+      hjust = 0.5,
+      lineheight = 1.2
+    )
+  )
+
+
+library(cowplot)
+plot_row <-
+  plot_grid(
+    univ1,
+    univ2,
+    labels = c("All cancers", "Lung cancer"),
+    label_size = 12,
+    label_colour = "steelblue"
+  ) #pour mettre graph cote a cote dans Rmarkdown
+
+#Add title
+title <- ggdraw() +
+  draw_label(
+    "Top 6 countries with highest risk of developping cancer",
+    fontface = 'bold',
+    x = 0,
+    hjust = 0
+  ) +
+  theme(# add margin on the left of the drawing canvas,
+    # so title is aligned with left edge of first plot
+    plot.margin = margin(0, 0, 0, 7)) +
+  theme_fivethirtyeight()
+
+plot_grid(title,
+          plot_row,
+          ncol = 1,
+          # rel_heights values control vertical title margins
+          rel_heights = c(0.1, 1))
+
+```
+
+As seen above, the countries with the highest risk of developing any type of cancer and lung cancer are in Europe and Oceania. We notice that Belgium and Hungary are among the countries where there is the highest risk of developing all types of cancer and lung cancer.
+
+The pie chart below shows that the risk of developing lung cancer is about 1/8 of the risk of developing any type of cancer.
+
+
+```{r}
+ 
+univ <-
+  cancerSummary %>% pivot_longer(c(`Value_all`, `Value_lung`),
+                                 names_to = "Cancer",
+                                 values_to = "Type") #change presentation of dataset for univariate analysis
+
+#Pie chart
+ggplot(univ, aes(x = "", y = Type, fill = Cancer)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  labs(title = "Proportion of incidence of risk of developping lung cancer") +
+  scale_fill_discrete(name = "",
+                      labels = c("All cancers", "Lung cancer")) +
+  
+  theme(plot.title = element_text(
+    size = 15,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  )) + scale_fill_brewer(palette = "Blues") + theme_void()
+
+
+```
+
+Now that we have been able to see from various graphs that the number of deaths and the risk of developing cancer and especially lung cancer is relatively high worldwide. We will take a closer look and explore the variables that could influence the risk of developing cancer, such as the number of cigarettes smoked and the air pollution.
+
+   +  __Analysis of the number of cigarettes smoked per day worldwide__
+   
+First of all we will look at the global level, i.e. on a continental scale, then we will see more precisely the countries where the most cigarettes are smoked per day.
+   
+```{r,out.width="700px", out.height="500px"}
+
+#boxplots number cigarettes without outliers
+
+med <- median(cancerSummary$number, na.rm = TRUE)#overall median
+
+boxp1 <-
+  ggplot(cancerSummary,
+         aes(x = Continent_Name, y = number, fill = Continent_Name)) +
+  geom_boxplot() +
+  geom_hline(yintercept = med, color = "red") +
+  scale_fill_brewer(palette = "Blues") +
+  
+  labs(title = "Boxplots of the number of cigarettes smoked per day", x = "Continent", y = "Number of cigarettes") +
+  theme_fivethirtyeight() + theme(legend.position = "none")
+
+ggplotly(boxp1)
+
+
+```
+According to these boxplots we can compare the number of cigarettes smoked per day for each continent. Most of these boxplots are approximately at the same height but the overall median shows that it is in Europe and South America where the number of cigarettes smoked per day is the highest (median of 20 and 19.7). Moreover in Europe values are much less dispersed than in other continents. 
+
+We can establish a link between these boxplots and those seen above representing the risk of developing cancer and lung cancer, since the risk was highest in Europe (the continents where the most cigarettes are smoked) and lowest in Africa (the continents where they smoke the fewest cigarettes per day).
+
+
+Now we will see the top 6 countries with the highest number of cigarettes smoked per day.
+
+```{r}
+
+#barplot cigarettes
+cancerSummary %>% arrange(desc(number)) %>%  head() %>%
+  ggplot(cancerSummary, mapping =
+           aes(x = reorder(Location, number),
+               y = number,)) + geom_bar(stat = 'identity', fill = "cornflowerblue",
+                                        color = "white") + coord_flip() + labs(title = "Top 6 countries where people smoke the most", subtitle = "Number of cigarettes smoked per day for each country") +
+  
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('Number of cigarettes') +
+  xlab('Country') + theme(
+    legend.position = "none",
+    plot.title = element_text(
+      size = 15,
+      color = "black",
+      hjust = 0.5,
+      lineheight = 1.2
+    )
+  )
+
+
+```
+
+Surprisingly, 2 out of 6 countries are part of the African continent. This can be explained by the fact that the dispersion of the number of cigarettes smoked is very large in Africa, as it can be seen in the boxplot above. Indeed the median remains around 12 cigarettes while it is 20 in Europe.
+
+
+We are now going to study the variable air pollution, indeed a more polluted air could increase the risk of developing cancer, especially lung cancer since inhaling polluted air can interfere with the growth and function of the lungs.
+
+
+
+   +  __Analysis of the quality of the air worldwide__
+   
+```{r,out.width="700px", out.height="500px"}
+
+#boxplots air pollution
+boxp4 <-
+  ggplot(cancerSummary,
+         aes(x = Continent_Name, y = Value_air, fill = Continent_Name)) +
+  geom_boxplot() +  scale_fill_brewer(palette = "Blues") +
+  labs(title = "Boxplot of the air pollution measured by PM2.5 concentration", x = "Continent", y = "PM2.5 concentration") +
+  theme_fivethirtyeight() + theme(legend.position = "none")
+
+ggplotly(boxp4)
+
+```
+We see very clearly on these boxplots that the air is the most polluted in Africa and Asia (median of about 30), in contrast to all other continents where the median of the PM2.5 concentration is half of it.
+
+At the country level, in the barplot below we can see that the 6 countries where the air is the most polluted belong to the Asian and African continent.
+
+```{r}
+
+#barplot air
+cancerSummary %>% arrange(desc(Value_air)) %>% head() %>%
+  ggplot(cancerSummary,
+         mapping = aes(x = reorder(Location, Value_air),
+                       y = Value_air)) + geom_bar(stat = 'identity', fill = "cornflowerblue",
+                                                  color = "white") + coord_flip() + labs(title = "Countries with the highest air pollution ") +
+  theme_fivethirtyeight() + theme(axis.title = element_text(), axis.title.x = element_text()) + ylab(' PM2.5 concentration') +
+  xlab('Country') + theme(
+    legend.position = "none",
+    plot.title = element_text(
+      size = 15,
+      color = "black",
+      hjust = 0.5,
+      lineheight = 1.2
+    )
+  )
+```
+
+Now we are going to analyse the GDP per capita at the continental level.
+
+ +  __Analysis of the GDP per Capita worldwide__
+
+```{r,out.width="700px", out.height="500px"}
+
+#boxplots GDP 
+boxp5 <-
+  ggplot(cancerSummary,
+         aes(x = Continent_Name, y = GDP, fill = Continent_Name)) +
+  geom_boxplot() +  scale_fill_brewer(palette = "Blues") +
+  labs(title = "Boxplot of the GDP per capita", x = "Continent", y = "GDP per capita") +
+  theme_fivethirtyeight() + theme(legend.position = "none")
+
+ggplotly(boxp5)
+
+```
+
+From these boxplots it can be seen very clearly that Europe is the continent with the highest GDP per capita (median of about 29,800). Asia is the 2nd continent with the highest GDP per capita, however there are also 3 outliers which represent an extremely high GDP per capita (116 935 or 85 535) compared to the median of 12,600.
+
+Africa is the continent with the lowest GDP per capita, its median is 2 660 and the upper fence is about 16 562, more than 1.5 times lower than the European GDP per capita median.
+
+
+The barplot of the countries with the highest GDP per Capita illustrates the boxplots seen above, in fact the 6 countries belong to the European and Asian continent.
+
+```{r}
+
+#barplot GDP
+cancerSummary %>% arrange(desc(GDP)) %>%  head() %>%
+  ggplot(cancerSummary, mapping = aes(x = reorder(Location, GDP),
+                                      y = GDP, )) + geom_bar(stat = 'identity', fill = "cornflowerblue",
+                                                             color = "white") + coord_flip() + labs(title = "Countries with the highest GDP per capita") +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(), axis.title.x = element_text()) + ylab('GDP per capita') +
+  xlab('Country') + theme(
+    legend.position = "none",
+    plot.title = element_text(
+      size = 15,
+      color = "black",
+      hjust = 0.5,
+      lineheight = 1.2
+    )
+  )
+
+```
+The GDP per capita varies a lot from one country to another, so it may be interesting to look at its evolution over time by country and not by continent.
+
+In the graphs below we have the evolution over time of the gdp per capita for some countries of each continent.
+
+```{r,out.width="700px", out.height="500px"}
+gdp1 <-
+  gdp_smokers[1035:1326, ] %>% filter(Continent_Code %in% c("AS", "EU")) %>% ggplot(gdp_smokers, mapping = aes(x = Year, y = GDP)) +
+  geom_line(color = "blue") + facet_wrap(~ Entity, ncol = 2, scales = "free") +
+  labs(title = "GDP per capita of countries in Asia and Europe") +
+  
+  theme_fivethirtyeight() + theme(
+    legend.position = "none",
+    axis.title = element_text(),
+    axis.title.x = element_text(),
+    axis.title.y = element_blank()
+  ) + xlab('Year') + ylab("GDP per capita") + theme(plot.title = element_text(
+    size = 17,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(gdp1)
+
+
+gdp2 <-
+  gdp_smokers[1488:1642,] %>% filter(Continent_Code %in% c("SA", "NA")) %>% ggplot(gdp_smokers, mapping = aes(x = Year, y = GDP)) +
+  geom_line(color = "blue") + facet_wrap( ~ Entity, ncol = 2, scales = "free") +
+  labs(title = "GDP per capita of countries in America") +
+  
+  theme_fivethirtyeight() + theme(
+    legend.position = "none",
+    axis.title = element_text(),
+    axis.title.x = element_text(),
+    axis.title.y = element_blank(),
+  ) + xlab('Year') + ylab("GDP per capita") + theme(plot.title = element_text(
+    size = 17,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(gdp2)
+
+gdp3 <-
+  gdp_smokers[150:628,] %>% filter(Continent_Code %in% c("OC", "AF")) %>% ggplot(gdp_smokers, mapping = aes(x = Year, y = GDP)) +
+  geom_line(color = "blue") + facet_wrap( ~ Entity, ncol = 2, scales = "free") +
+  labs(title = "GDP per capita of countries in Oceania and Africa") +
+  
+  theme_fivethirtyeight() + theme(
+    legend.position = "none",
+    axis.title = element_text(),
+    axis.title.x = element_text(),
+    axis.title.y = element_blank()
+  ) + xlab('Year') + ylab("GDP per capita") + theme(plot.title = element_text(
+    size = 17,
+    color = "black",
+    hjust = 0.5,
+    lineheight = 1.2
+  ))
+
+ggplotly(gdp3)
+
+```
+In these graph we see that for the majority of the countries the gdp per capita increases a lot over time. We also notice large differences between countries (therefore the scales used are different for each country ).
+
+__Correlation matrix__
+
+The correlation matrix helps understanding the relationship between the important variables. It is also useful to summarize data, as an input for the analysis part.
+
+This matrix shows the correlation coefficients between variables.
+
+
+```{r,out.width="700px", out.height="500px"}
+
+#correaltion plot between important variables
+library(reshape2)
+
+cormat <- round(cor(cancerSummary[,-c(1:4)]), 2)
+
+library(RColorBrewer)
+library(heatmaply)
+heatmaply(cormat, colors = colorRampPalette(brewer.pal(3, "RdBu")))
+
+```
+
+We see directly that there is a zero or negative correlation with the set of variables and value_air, ie air pollution. For the rest of the variables there are positive correlations between them (between some variables it is low but still positive). We will study in detail in the "Analysis" section the different relationships between the variables.
+
+## Summary table
+
+  + Summary statistic for each important variable from the CancerSummary dataset:
+  
+In this part of the project, we calculate the statistics (minimum, 25th quantile, median, mean, 75th quantile and maximum) of our most important variables and summarize everything in the table below.
+
+
+```{r, include= FALSE}
+cancerSummary <- as_tibble(cancerSummary)
+
+summary_cancer <- summary(cancerSummary)
+
+rename <- cancerSummary %>% rename(valueall = Value_all, valuelung = Value_lung, valueair = Value_air)
+
+
+summary_count <- rename %>% count(GDP, valueall, valueall, number, valueair, name = "num")
+
+
+
+summary_test <- rename %>%
+  summarize(across(
+    is.numeric,
+    c(
+      "Min." = min,
+      "1st Qu." = function(x) quantile(x, 0.25, na.rm = TRUE),
+      "Median" = median,
+      "Mean" = mean,
+      "3rd Qu." = function(x) quantile(x, 0.75, na.rm = TRUE),
+      "Max." = max
+    )
+  ))
+
+
+```
+
+
+```{r}
+
+#We manipulate the statistic in order to have what we want in one table. 
+library(kableExtra)
+library(knitr)
+summary_long_test <- summary_test %>%
+  pivot_longer(everything()) %>%
+  separate(name, c("variable", "stat"), sep = "_")
+
+
+summary_stats_tidy <- summary_long_test %>%
+  pivot_wider(names_from = stat, values_from = value)
+
+summary_stats_transposed <- summary_stats_tidy %>%
+  pivot_longer(-variable, names_to = "Stat", values_to = "value") %>%
+  pivot_wider(names_from = variable, values_from = value)
+
+kable(summary_stats_transposed) %>% kable_styling(latex_options = "striped")
+
+```
+
+
+This table shows that there is a large dispersion between the observations of each variable, which proves that the data vary a lot from one country to another. We have the statistics for each variables. We can see that for instance in average, people smoke 17.5 cigarettes a day, the average GDP pr capita is 19 130 ranging from 702 to 11 6936.
+
+We will analyze more precisely the relationships between the different variables in the next part.
+
+
+

@@ -1,0 +1,206 @@
+# Data
+
+
+```{r, echo = FALSE, message = FALSE}
+source(here::here("scripts/setup.R"))
+```
+
+## Sources
+
+  + Import data from csv file to dataFrame and check the importation (check that the number of imported rows/columns match with the number of rows/columns in the original file)
+  
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+```{r, echo = TRUE}
+cancer<- read_csv(file= here::here("data/cancer-deaths.csv"))
+Air<- read_csv(file= here::here("data/Airglobal.csv"))
+smokers <- read_csv(file= here::here("data/smokglobal.csv"))
+Lungcancer <- read_csv(file= here::here("data/Lungcancer.csv"))
+gdp <- read_csv(file= here::here("data/gdpglobal.csv"))
+cancerValue <- read_csv(file= here::here("data/cancervalue.csv"))
+continent <- read_csv(file=here::here("data/continent.csv"))
+
+```
+
+* __Description__
+
+To answer our research questions we have chosen 7 different datasets coming from various sources. 
+
+The two datasets^1^ about cancer (overall and lung cancer) have both 185 observations and 3 variables. For each country the cancer table reports the information about the estimated cumulative risk of incidence in 2018, for both sex and ages between 0 and 74. The cumulative incidence is calculated as the number of new events or cases of disease divided by the total number of individuals in the population at risk for a specific time interval. Researchers can use cumulative incidence to predict risk of a disease or event over short or long periods of time. 
+
+A dataset^2^ containing the cancer deaths, the cancer death rate, and the age-standardized death rate for each country between 1990 and 2017 was also taken, it has 6468 observations and 6 variables. We chose to use this dataset to use the variable representing the number of cancer deaths per country.
+
+
+The fourth dataset^3^ we chose is about daily cigarette consumption per smoker per day for each country. In fact the extent of smoking is not only determined by the prevalence of populations who smoke, but also by the intensity of smoking. This is measured as the average number of cigarettes consumed by smokers daily. This dataset contains 6204 observations and 4 variables. The data was collected between 1980 and 2012. These datasets are related since many scientific works have shown that smoking increases the odds of developing diseases. 
+
+
+The 5th dataset^4^ is about the air quality. The table contains 580 observations and 5 variables collected in 2016. In this table, the concentration of fine particles in the air per country is determined. In fact, The mean annual concentration of fine suspended particles of less than 2.5 microns in diameters is a common measure of air pollution. The mean is a population-weighted average for urban population in a country. The higher the value is the more the population of the country is exposed to fine particles. Air pollution consists of many pollutants, among other particulate matter. These particles are able to penetrate deeply into the respiratory tract and therefore constitute a risk for health by increasing mortality from respiratory infections and diseases.
+
+
+
+The 6th dataset^5^ we use to answer our research questions is about the GDP per capita based on purchasing power parity (PPP). PPP GDP is gross domestic product converted to international dollars using purchasing power parity rates. The dataset consists of 6407 observations and 4 variables, the GDP per capita is given for each country between 1990 and 2017.
+Although these data tables do not cover exactly the same periods of time. All the datasets are recent enough ( 2012, 2016, 2017, 2018) to make estimates and analyze possible correlations between the variables.
+
+We finally used a dataset^6^ containing all the countries and the continents to which they belong in order to be able to make analyses at the global level and to see the differences between the continents.
+
+  + Datasets sources:
+  
+^1^  [cancer Values sources](https://gco.iarc.fr/today/online-analysis-map?v=2018&mode=population&mode_population=continents&population=900&populations=900&key=asr&sex=0&cancer=15&type=0&statistic=5&prevalence=0&population_group=0&ages_group%5B%5D=0&ages_group%5B%5D=17&nb_items=10&group_cancer=1&include_nmsc=1&include_nmsc_other=1&projection=globe&color_palette=default&map_scale=quantile&map_nb_colors=5&continent=0&rotate=%255B10%252C0%255D)
+
+^2^  [cancer Deaths source](https://ourworldindata.org/cancer)
+
+^3^  [smokers source](https://ourworldindata.org/smoking#smoking-vs-gdp-per-capita)
+
+^4^  [air pollution source](https://www.who.int/data/gho/data/indicators/indicator-details/GHO/concentrations-of-fine-particulate-matter-(pm2-5))
+
+^5^  [gdp per capita source]( https://ourworldindata.org/grapher/gdp-per-capita-worldbank)
+
+^6^  [continents source](https://datahub.io/JohnSnowLabs/country-and-continent-codes-list)
+
+
+## Wrangling/cleaning
+
+
+   + In this part we clean, prepare and manipulate the data. The goal is to understand the data, identifiy the target variables and the dependant variables.
+
+
+```{r}
+cancer <- cancer %>% rename("Number_Deaths"="Deaths - Neoplasms - Sex: Both - Age: All Ages (Number)" )
+
+air1 <-
+  Air %>% as_tibble() %>% select(-Indicator) %>% filter(Dim1 == "Total") %>% rename("Pollution" = "First Tooltip") %>%
+  separate(Pollution,
+           into = c('Value_air', 'interval'),
+           sep = ' ') %>% #separate last colomns in 2 colomns
+  select(Location, Value_air, interval)
+
+
+air1$Value_air <-
+  as.numeric(as.character(air1$Value_air)) #convert value_air in numeric value
+
+
+totalcancer <-
+  full_join(cancerValue, Lungcancer, by = "ISO code") %>%
+  tibble() %>%
+  select(where(~ !all(is.na(.)))) %>%
+  rename(Value_all = "Value.x",
+         Value_lung = "Value.y",
+         Code = "ISO code") %>%
+  select(Code, Population.x, Value_all, Value_lung) #Gather all cancer & lung cancer value in a dataset totalcancer
+
+#rename colomns that are too long
+smokers <-
+  smokers %>% rename(number = "Cigarette consumption per smoker per day (IHME, GHDx (2012))")
+
+gdp <-
+  gdp %>% rename(GDP = "GDP per capita, PPP (constant 2011 international $)")
+
+#keep only most recent observations
+smoker1 <- smokers %>%
+  filter(Year == 2012) %>%
+  select(Code, number) 
+
+gdp1 <- gdp %>%
+  filter(Year == 2017) %>%
+  select(Code, GDP) %>% drop_na()
+
+
+```
+
+
+
+   + We gather several tables together, this will make the EDA and Analysis part later easier. Since we want to see the relationship between cancers and the other variables. 
+
+```{r}
+
+cancer_smoke <-
+  full_join(totalcancer, smoker1, by = "Code") %>% drop_na() #dataset with cancer values and smokers values
+
+gdp_smokers <-
+  inner_join(gdp, smokers, by = c("Entity", "Year")) %>% rename(Code = "Code.x") %>% select(Entity, Code, Year, GDP, number) #dataset gdp and smoked cigarettes over time
+
+cancer_smoke <-
+  full_join(totalcancer, smoker1, by = "Code") %>% drop_na()
+
+```
+
+## Spotting mistakes, missing data, listing anomalies and outliers
+
+  + We observed that there are missing values that need to be removed. In addition, we also noticed that there are outliers in some datasets. For example in Suriname the number of cigarettes smoked per day is around 108.9, this value seems very high compared to the value in other countries. That's why we compute the Q1, Q3 and IQR to remove all the potential outliers of the dataset.
+
+```{r}
+
+#compute and remove outliers
+Q1 <- quantile(cancer_smoke$number, .25)
+Q3 <- quantile(cancer_smoke$number, .75)
+IQR <- IQR(cancer_smoke$number)
+
+cancer_smoke <-
+  subset(cancer_smoke,
+         cancer_smoke$number > (Q1 - 1.5 * IQR) &
+           cancer_smoke$number < (Q3 + 1.5 * IQR))
+
+#Dataset most recent GDP
+gdp1 <- gdp %>%
+  filter(Year == 2017) %>%
+  select(Code, GDP) %>% drop_na()
+
+#Merge datasets
+cancerSummary <-
+  inner_join(gdp1, cancer_smoke, by = c("Code")) %>% rename(Location = "Population.x")
+
+#rename colomn for later analysis
+cancer_smoke <- cancer_smoke%>% rename(Entity = "Population.x")
+```
+
+  + We finally decided to add a dataset with the names of each continent in order to have a more global vision. Moreover we notice that there is an error in the continent dataset. Armenia is present twice in the dataset, once it belongs to the European continent and the other time to Asia. Once the error is corrected we obtain these summary tables.
+
+```{r}
+continent <- continent %>% select(matches('continent|Three')) %>%
+  rename(Code = "Three_Letter_Country_Code")
+continent <- continent[-17,] #remove false Armenia
+
+
+cancerSummary <- inner_join(cancerSummary, continent, by = ("Code"))
+cancerSummary <-
+  inner_join(air1, cancerSummary, by = c("Location"))
+gdp_smokers <- inner_join(gdp_smokers, continent, by = "Code")
+
+
+cancerSummary[is.na(cancerSummary)] <-
+  "NA" #replace NA with "NA" for North America
+gdp_smokers[is.na(gdp_smokers)] <- "NA"
+
+cancerSummary <-
+  cancerSummary[, c(1, 4, 9, 10, 2, 5, 6, 7, 8)] #Reorder colomns
+gdp_smokers <- gdp_smokers[, c(1, 2, 6, 7, 3, 4, 5)]
+
+
+#add continent to number of deaths evolution
+cancer <- inner_join(cancer, continent, by = ("Code"))
+cancer[is.na(cancer)] <-
+  "NA" 
+
+library(DT)
+datatable(gdp_smokers,
+          caption = 'Table 1: gdp_smokers table',
+          options = list(pageLength = 5)) %>%
+  formatRound(columns = c('GDP','number'), digits = 1)
+
+```
+
+In the cancerSummary table (Table2), Value_all represents the incidence of risk of having all type of cancers, Value_lung the incidence of risk of developping lung cancer, Value_air represents the PM2.5 concentration in the air, in other words the air quality and finally the colomn number represents the number of cigarettes smoked per day for each country.
+
+
+
+```{r}
+
+datatable(cancerSummary,
+          caption = 'Table 2: cancerSummary table',
+          options = list(pageLength = 5)) %>%
+  formatRound(columns = c('GDP', 'number'), digits = 1)
+
+
+```
